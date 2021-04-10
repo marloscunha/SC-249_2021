@@ -6,3 +6,7 @@ class waypoint():
     def updateWP(self, sim_time):
         self.posNow = PVector.mult(self.posNow, 1 - sim_time)
         self.posNow = self.posNow.add(PVector.mult(self.posToGo,sim_time))
+        
+        
+# 0
+# wSize/2, hSize/2

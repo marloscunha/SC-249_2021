@@ -26,23 +26,15 @@ def draw():
         sim_time = 1
     
     fill(255)
-    ellipse(WP.posNow.x, WP.posNow.y, 16, 16)
     
-    walker02.plotWalker()
+    walker02.plotWalker(sim_time)
             
 def mouseClicked():
     global sim_time
-    WP.posNow.set(WP.posToGo)
     
-    WP.posToGo.x = mouseX
-    WP.posToGo.y = mouseY
-    
-    # Teleports the Walker
-    #walker02.overridePose(x_over=mouseX, y_over=mouseY)
-    
-    # Tells the walker to go to the mouse cursor.
-    
-
+    walker02.Tgt_Pos.set(mouseX, mouseY)
+       
+    # Restarts the simulation clock
     sim_time = 0   
     
     
