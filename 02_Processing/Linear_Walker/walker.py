@@ -11,9 +11,7 @@ class walker():
         self.window_wSize = wSize
         self.window_hSize = hSize
     
-    def updatePose(self, sim_time, WP): 
-       
-        outAcc, outSpd, outPos = WP.generateCommands(self.Pos, self.Spd, self.Acc)
+    def updatePose(self, outAcc, outSpd, outPos): 
         self.Acc = outAcc
         self.Spd = outSpd
         self.Pos = outPos
@@ -21,9 +19,9 @@ class walker():
         self.Pos.x = (self.Pos.x+self.window_wSize) % self.window_wSize
         self.Pos.y = (self.Pos.y+self.window_hSize) % self.window_hSize
                
-    def plotWalker(self, sim_time, WP):
-        self.updatePose(sim_time, WP)
-        
+    def plotWalker(self):
         fill(self.Color[0], self.Color[1], self.Color[2])
         ellipse(self.Pos.x, self.Pos.y, self.wh, self.wh)
         fill(255)
+        
+        print(self.Spd)
