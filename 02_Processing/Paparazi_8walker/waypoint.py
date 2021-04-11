@@ -42,7 +42,7 @@ class waypoint():
         
         outAcc = PVector.add(PVector.add(walkerAcc, steering), randomNoise)
         outSpd = PVector.add(walkerSpd, outAcc).limit(self.maxSpd)
-        if flag_useAcc == 1:
+        if flag_useAcc == 0:
             outPos = PVector.add(walkerPos, desSpd)
         else:
             outPos = PVector.add(walkerPos, outSpd)
