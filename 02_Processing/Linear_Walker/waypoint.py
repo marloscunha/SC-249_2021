@@ -16,7 +16,7 @@ class waypoint():
         self.currWP_status = 'chasing'
         self.prevWP_status = 'chasing'
         
-        self.captureTol = 1e-3
+        self.captureTol = 2
 
         self.window_wSize = wSize
         self.window_hSize = hSize
@@ -27,7 +27,7 @@ class waypoint():
         self.prevWP_status = WPstatus
         self.currWP = PVector(random(1) * self.window_wSize, random(1) * self.window_hSize)
         self.currWP_status = 'chasing'
-    
+           
     def updateTarget(self, distTarget_mag, newTarget=None):
         # 0  : captured
         # -1 : skip
