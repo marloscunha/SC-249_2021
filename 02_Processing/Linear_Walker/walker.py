@@ -1,8 +1,9 @@
 class walker():
     # Default walker properties
-    def __init__(self, wSize, hSize, x0, y0, vx_0, vy_0, printSize, printColor):
+    def __init__(self, wSize, hSize, x0, y0, vx_0, vy_0, ax_0, ay_0, printSize, printColor):
         self.Pos = PVector(x0, y0)
         self.Spd = PVector(vx_0, vy_0)
+        self.Acc = PVector(ax_0, ay_0)
                
         self.wh = printSize
         self.Color = printColor
@@ -12,13 +13,13 @@ class walker():
     
     def updatePose(self, sim_time, WP): 
        
-        self.Pos = self.Pos.add(WP.generateCommands(self.Pos))
+        outAcc, outSpd, outPos = WP.generateCommands(self.Pos, self.Spd, self.Acc)
+        self.Acc = outAcc
+        self.Spd = outSpd
+        self.Pos = outPos
         
-        # Implements a bouncing if boundaries are exceeded: 
-        if (self.Pos.x > self.window_wSize or self.Pos.x < 0):
-            self.Spd.x *= -1
-        if (self.Pos.y > self.window_hSize or self.Pos.y < 0): 
-            self.Spd.y *= -1
+        self.Pos.x = (self.Pos.x+self.window_wSize) % self.window_wSize
+        self.Pos.y = (self.Pos.y+self.window_hSize) % self.window_hSize
                
     def plotWalker(self, sim_time, WP):
         self.updatePose(sim_time, WP)

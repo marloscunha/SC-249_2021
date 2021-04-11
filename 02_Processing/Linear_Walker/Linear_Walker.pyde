@@ -7,8 +7,8 @@ def setup():
     background(255)
     
     global walker01, walker02, t0, tn, sim_time, sim_step, WP
-    walker01 = walker(width, height, x0=100 , y0=100, vx_0=1, vy_0=3.3, printSize=16, printColor=[255, 255, 255])
-    walker02 = walker(width, height, x0=200 , y0=200, vx_0=1, vy_0=3.3, printSize=16, printColor=[255, 192, 203])
+    walker01 = walker(width, height, x0=100 , y0=100, vx_0=1, vy_0=3.3, ax_0 = 0, ay_0 = 0, printSize=16, printColor=[255, 255, 255])
+    walker02 = walker(width, height, x0=200 , y0=200, vx_0=0, vy_0=0, ax_0 = 0, ay_0 = 0, printSize=16, printColor=[255, 192, 203])
     WP = waypoint(width, height)
     
     WP.generateTarget()
@@ -28,11 +28,11 @@ def draw():
         sim_time = 1
        
     walker02.plotWalker(sim_time, WP)
-    walker01.plotWalker(sim_time, WP)
+    
+    #print(walker02.Spd, walker02.Acc)
     
     fill(255)      
-#    ellipse(WP.currWP[0], WP.currWP[1], 5, 5)
-#    fill(255)
+    ellipse(WP.currWP[0], WP.currWP[1], 5, 5)
     
             
 def mouseClicked():
