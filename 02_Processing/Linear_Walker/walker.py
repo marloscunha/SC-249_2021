@@ -42,10 +42,7 @@ class walker():
         
         outAcc = PVector.add(PVector(0), steering)
         outSpd = PVector.add(self.Spd, outAcc).limit(self.MaxSpd)
-        if flag_useAcc == 0:
-            outPos = PVector.add(self.Pos, desSpd)
-        else:
-            outPos = PVector.add(self.Pos, outSpd)
+        outPos = PVector.add(self.Pos, outSpd)
         
         print(distTarget_mag, self.Spd)
         return outAcc, outSpd, outPos, distTarget_mag
