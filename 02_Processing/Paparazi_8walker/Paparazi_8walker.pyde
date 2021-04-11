@@ -24,10 +24,12 @@ def draw():
     sim_time += sim_step
     if (sim_time > 1):
         sim_time = 1
+    else:
+        walker02.plotWalker(sim_time)
     
     fill(255)
     
-    walker02.plotWalker(sim_time)
+    
             
 def mouseClicked():
     global sim_time
