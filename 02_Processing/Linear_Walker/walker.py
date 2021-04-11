@@ -6,8 +6,8 @@ class walker():
         self.Spd = PVector(vx_0, vy_0)
         self.Acc = PVector(ax_0, ay_0)
         
-        self.MaxSpd = 6
-        self.MaxForce = 0.5
+        self.MaxSpd = 4
+        self.MaxForce = 0.1
                
         self.wh = printSize
         self.Color = printColor
@@ -26,41 +26,39 @@ class walker():
         
     def generateCommands(self, currWP):
         flag_useAcc = 0         # Temporary
-                                
-        deltaPath = PVector.sub(currWP, self.Pos)     
-        captureStatus = deltaPath.mag()
         
-        desSpd = deltaPath.copy().limit(self.MaxSpd) # Desired Speed
+        #Distance between Target and Vehicle.                        
+        distTarget     = PVector.sub(currWP, self.Pos)     
+        distTarget_mag = distTarget.mag()
+                 
+        # Desired Speed:
+        if distTarget_mag < 100:
+            m = map(distTarget_mag, 0, 100, 0, self.MaxSpd)
+            desSpd = PVector.mult(distTarget.normalize(), m)
+        else:
+            desSpd = PVector.mult(distTarget.normalize(), self.MaxSpd) # Desired Speed
+
         steering = PVector.sub(desSpd,self.Spd).limit(self.MaxForce)
         
-        outAcc = PVector.add(self.Acc, steering)
+        outAcc = PVector.add(PVector(0), steering)
         outSpd = PVector.add(self.Spd, outAcc).limit(self.MaxSpd)
         if flag_useAcc == 0:
             outPos = PVector.add(self.Pos, desSpd)
         else:
             outPos = PVector.add(self.Pos, outSpd)
         
-        return outAcc, outSpd, outPos, captureStatus
+        print(distTarget_mag, self.Spd)
+        return outAcc, outSpd, outPos, distTarget_mag
                
-    def plotWalker(self):
-        global pi
-        
+    def plotWalker(self):       
         
         theta = self.Spd.heading() + PI/2
         pushMatrix()
         translate(self.Pos.x, self.Pos.y)
         rotate(theta)
         fill(self.Color[0], self.Color[1], self.Color[2])
-        
         triangle(   0    , -self.wh,
                  -self.wh,  self.wh,
                  self.wh ,  self.wh)
-        
-        #triangle(self.Pos.x - self.wh/2, self.Pos.y - (((3)**(0.5))/6)*(self.wh),
-        #         self.Pos.x            , self.Pos.y + (((3)**(0.5))/3)*(self.wh),
-        #         self.Pos.x + self.wh/2, self.Pos.y - (((3)**(0.5))/6)*(self.wh))
-        popMatrix()
-        #ellipse(self.Pos.x, self.Pos.y, self.wh, self.wh)
-        fill(255)
-        
-        print(self.Spd)
+        popMatrix()        
+        #print(self.Spd.heading())

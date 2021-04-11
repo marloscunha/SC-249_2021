@@ -16,9 +16,8 @@ class waypoint():
         self.currWP_status = 'chasing'
         self.prevWP_status = 'chasing'
         
-        self.maxSpd = 1
-        self.maxForce = 0.1
-        
+        self.captureTol = 1e-3
+
         self.window_wSize = wSize
         self.window_hSize = hSize
         
@@ -29,16 +28,17 @@ class waypoint():
         self.currWP = PVector(random(1) * self.window_wSize, random(1) * self.window_hSize)
         self.currWP_status = 'chasing'
     
-    def updateTarget(self, WPstatus, newTarget=None):
+    def updateTarget(self, distTarget_mag, newTarget=None):
         # 0  : captured
         # -1 : skip
         # >0 : chasing 
 
-        if WPstatus == 0: #Captured
-            self.generateTarget('captured')
-            print(str(self.prevWP) + ': ' + self.prevWP_status + ' || ' + str(self.currWP) + ': '+ self.currWP_status)
+        if distTarget_mag >=0: 
+            if distTarget_mag <= self.captureTol: #Captured
+                self.generateTarget('captured')
+                print(str(self.prevWP) + ': ' + self.prevWP_status + ' || ' + str(self.currWP) + ': '+ self.currWP_status)
 
-        elif WPstatus == -1 and newTarget != None: #Skipping and following a new WP.
+        elif distTarget_mag == -1 and newTarget != None: #Skipping and following a new WP.
             self.prevWP = self.currWP.copy()
             self.prevWP_status = 'skipped'
             self.currWP = newTarget

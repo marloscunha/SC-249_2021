@@ -21,9 +21,9 @@ class env():
         
         # Inner forces and commands:
             
-        WP_outAcc, WP_outSpd, WP_outPos, captureStatus = walker.generateCommands(WP.currWP)
+        WP_outAcc, WP_outSpd, WP_outPos, distTarget_mag = walker.generateCommands(WP.currWP)
         
-        WP.updateTarget(captureStatus)
+        WP.updateTarget(distTarget_mag)
         
         # Outer forces and commands:
         outAcc, outSpd, outPos = WP_outAcc, WP_outSpd, WP_outPos+windForce

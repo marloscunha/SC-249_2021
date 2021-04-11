@@ -20,11 +20,10 @@ def setup():
     print(WP.currWP)
     
 def draw():
-    global pi    
     Env.updateEnv(WP, walker02, flag_wind)
     
     walker02.plotWalker()
-
+    fill(255)
     ellipse(WP.currWP[0], WP.currWP[1], 5, 5)
     
             
