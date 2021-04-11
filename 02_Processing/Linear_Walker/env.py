@@ -12,13 +12,26 @@ class env():
         windForce = self.windVec
         return windForce
             
-    def updateForces(self, WP, walker, flag_wind=0):
+    def updateEnv(self, WP, walker, flag_wind=0):
+        global pi
         
         self.wind(flag_wind)
         windForce = self.generateForces()
         #print(windForce, flag_wind)
         
-        WP_outAcc, WP_outSpd, WP_outPos = WP.generateCommands(walker.Pos, walker.Spd, walker.Acc)
+        # Inner forces and commands:
+            
+        WP_outAcc, WP_outSpd, WP_outPos, captureStatus = walker.generateCommands(WP.currWP)
+        
+        WP.updateTarget(captureStatus)
+        
+        # Outer forces and commands:
         outAcc, outSpd, outPos = WP_outAcc, WP_outSpd, WP_outPos+windForce
+        
+        # Overall effect:
+        outAcc = WP_outAcc 
+        outSpd = WP_outSpd 
+        outPos = WP_outPos + windForce
+            
         walker.updatePose(outAcc, outSpd, outPos)
         

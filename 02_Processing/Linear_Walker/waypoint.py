@@ -46,29 +46,4 @@ class waypoint():
             
             print(str(self.prevWP) + ': ' + self.prevWP_status + ' || ' + str(self.currWP) + ': '+ self.currWP_status)
                 
-    def generateCommands(self, walkerPos, walkerSpd, walkerAcc):
-        
-        flag_useAcc = 0
-        flag_useNoise = 0
-        
-        deltaPath = PVector.sub(self.currWP, walkerPos)     
-        
-        self.updateTarget(deltaPath.mag())
-        
-        desSpd = deltaPath.copy().limit(self.maxSpd) # Desired Speed
-        
-        steering = PVector.sub(desSpd,walkerSpd).limit(self.maxForce)
-        
-        if flag_useNoise == 0:
-            randomNoise = PVector(0,0)
-        else:
-            randomNoise = PVector.random2D().mult(0.14) 
-        
-        outAcc = PVector.add(PVector.add(walkerAcc, steering), randomNoise)
-        outSpd = PVector.add(walkerSpd, outAcc).limit(self.maxSpd)
-        if flag_useAcc == 0:
-            outPos = PVector.add(walkerPos, desSpd)
-        else:
-            outPos = PVector.add(walkerPos, outSpd)
-        
-        return outAcc, outSpd, outPos
+    
