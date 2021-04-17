@@ -9,14 +9,14 @@ class walker():
         self.Acc = PVector(ax_0, ay_0)
         
         self.angProj = 0
-        self.rotClockwise = 1
+        self.rotClockwise = -1
         self.refDeptAngle = 'target' # 'target' or 'self'
         
         self.angSpd = 1
         self.MaxSpd = 4
         self.MaxForce = 0.1
         
-        self.state = 4
+        self.state = 3
         self.subState = 0
         
         self.WPtol = 2
@@ -55,10 +55,12 @@ class walker():
         elif self.state == 2: # Circle around with or without Future Position
             desSpd, distTarget_mag, trash = self.circleAround(flag_futurePos=0)
             
-        elif self.state == 4: # Figure 8 Navigation. (2D implementation)
+        elif self.state == 3: # Figure 8 Navigation. (2D implementation)
+            
             Target = WPlist.currWP
             C1     = WPlist.nextWP
-            self.substate = 0
+            if self.subState == 0:
+                self.subState = 1
             
             desSpd, distTarget_mag = self.eightNav(Target, C1, flag_rotClockwise=self.rotClockwise)            
             
@@ -98,7 +100,7 @@ class walker():
             C2_out = pahtPoints[2]
             C2_in  = pahtPoints[3]
             
-            Cout_deg = PI/2
+            Cout_deg = PI/2 + PI/5
             
         elif flag_rotClockwise == -1: # Counter clockwise rotation
             C1_in  = pahtPoints[0]
@@ -109,35 +111,36 @@ class walker():
             Cout_deg = -PI/2
                     
         # Go to C1 and circle around it until C1_out is reached
-        print('Current substate: ' + str(self.subState))
-        if self.subState == 0: # Circle around C1
+        if self.subState == 1: # Circle around C1
             self.currWP = C1
             desSpd, distTarget_mag, tgtAngPos  = self.circleAround(flag_futurePos=1, flag_direction=flag_rotClockwise,flag_plot=0)
             
             if self.checkAngCapture(Cout_deg, tgtAngPos):
                 self.currWP = C2_in
-                self.subState = 1
+                self.subState += 1
         
-        elif self.subState == 1: # Move from C1_out to C2_in
+        elif self.subState == 2: # Move from C1_out to C2_in
             self.currWP = C2_in
             desSpd, distTarget_mag  = self.captureWP()
             if distTarget_mag <= self.WPtol:
                 self.currWP = C2
-                self.subState = 2
+                self.subState += 1
                 
-        elif self.subState == 2: # Circle around C2
+        elif self.subState == 3: # Circle around C2
             self.currWP = C2
             desSpd, distTarget_mag, tgtAngPos  = self.circleAround(flag_futurePos=1, flag_direction=-flag_rotClockwise, flag_plot=0)                
             if self.checkAngCapture(Cout_deg, tgtAngPos):
                 self.currWP = C1_in
-                self.subState = 3
+                self.subState += 1
         
-        elif self.subState == 3: # Move from C2_out to C1_in
+        elif self.subState == 4: # Move from C2_out to C1_in
             self.currWP = C1_in
             desSpd, distTarget_mag  = self.captureWP()
             if distTarget_mag <= self.WPtol:
                 self.currWP = C1
-                self.subState = 0
+                self.subState = 1
+        else:
+            desSpd = PVector(0,0,0)
         
         distTarget_mag = PVector(9999,0,0).mag() # infinite looping
         
@@ -145,6 +148,7 @@ class walker():
         arc(C2.x, C2.y, 2*self.stayAtRadius, 2*self.stayAtRadius, PI/2, 3*PI/2, OPEN)
         line(C1_out.x, C1_out.y, C2_in.x, C2_in.y)
         line(C2_out.x, C2_out.y, C1_in.x, C1_in.y)
+        line(self.Pos.x, self.Pos.y, self.currWP.x, self.currWP.y)
         
         return  desSpd, distTarget_mag
 
