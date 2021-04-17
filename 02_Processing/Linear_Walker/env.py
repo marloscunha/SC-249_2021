@@ -18,7 +18,7 @@ class env():
         #print(windForce, flag_wind)
         
         # Inner forces and commands:    
-        InnLoop_outAcc, InnLoop_outSpd, InnLoop_outPos, distTarget_mag = walker.generateCommands(WP.currWP)
+        InnLoop_outAcc, InnLoop_outSpd, InnLoop_outPos, distTarget_mag = walker.generateCommands(WP)
         
         WP.updateTarget(distTarget_mag)
         

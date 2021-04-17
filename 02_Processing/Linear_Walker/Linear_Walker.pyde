@@ -5,7 +5,7 @@ from math import pi
 import pdb
 
 def setup():
-    size(800, 600)
+    size(1200, 800)
     background(255)
     
     global walker01, walker02, t0, tn, sim_time, sim_step, WP, Env, flag_wind, pi
@@ -23,10 +23,18 @@ def draw():
     Env.updateEnv(WP, walker02, flag_wind)
     walker02.plotWalker()
     fill(255)
-    ellipse(WP.currWP[0], WP.currWP[1], 5, 5)
-    
+    #ellipse(WP.currWP[0], WP.currWP[1], 5, 5)
+    fill(255,0,0)
+    #ellipse(WP.nextWP[0], WP.nextWP[1], 5, 5)
+    fill(255)
+    frameRate(50)
             
 def mouseClicked():
     global flag_wind
-    WP.updateTarget(-1, PVector(mouseX,mouseY))
+    if mouseButton == LEFT:
+        WP.setWPtype(1) # Random
+        WP.updateTarget(-1, PVector(mouseX,mouseY))
+    elif mouseButton == RIGHT:
+        WP.setWPtype(2) # Eight Figure
+        WP.updateTarget(-1, PVector(mouseX,mouseY))
     flag_wind *= -1
