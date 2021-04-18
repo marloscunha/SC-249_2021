@@ -10,7 +10,7 @@ Deveria mandar uma lista e nao assim...
 '''
 
 class waypoint():
-    def __init__(self, wSize, hSize):
+    def __init__(self):
         
         self.currWP = PVector(0,0)
         self.prevWP = PVector(0,0)
@@ -26,16 +26,13 @@ class waypoint():
         self.WPtype = 1 
         
         self.radius = 1
-
-        self.window_wSize = wSize
-        self.window_hSize = hSize
         
     def generateTarget(self, WPstatus):
         # Gerar automaticamente os WPs (next, current e ja trocar automaticamente)    
         if self.WPtype == 1: # Generates a new random target.
             self.prevWP = self.currWP.copy()
             self.prevWP_status = WPstatus
-            self.currWP = PVector(random(1) * self.window_wSize, random(1) * self.window_hSize)
+            self.currWP = PVector(random(1) * width, random(1) * height)
             self.currWP_status = 'chasing'
             self.nextWP = PVector.add(self.currWP,PVector(200,0,0))
             self.nextWP_status = 'chasing'

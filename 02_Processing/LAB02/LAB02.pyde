@@ -1,42 +1,54 @@
 from vehicle import vehicle
 from waypoint import waypoint
 from env import env
-from math import pi
-import pdb
 
 def setup():
-    size(1200, 800)
-    resolution = 10 # Amount of pixels to be used as simulation resolution.
-    background(255)
-    
+    # Global variables:
     global vehicle, WP, Env, flag_wind, stateEnum, subStateEnum, windType, rotationType
     
-    Env = env(resolution)
-    vehicle = vehicle(x0=200 , y0=200, vx_0=0, vy_0=0.0, ax_0 = 0, ay_0 = 0, printSize=6, printColor=[000, 255, 00])
+    # Simulation definitions:
+    size(1200, 800) # Window display size
+    resolution = 10 # Amount of pixels to be used as simulation resolution.
+    background(255) # Background colour    
+        
+    # Initial Values
+    initPos       = PVector(0,0)
+    initSpd       = PVector(0,0)
+    initAcc       = PVector(0,0)
+    vehicleColour = [0, 255, 0]
+    vehicleSize   = 6
+    
+    # Object instantiation:
+    Env       = env(resolution)                                             # Creates the simulationational environment
+    WP = waypoint()    
+    WP.generateTarget('first')
+    vehicle   = vehicle(x0=initPos.x , y0=initPos.y,                        # Creates a vehicle
+                        vx_0=initSpd.x, vy_0=initSpd.y, 
+                        ax_0 = initAcc.x, ay_0 = initAcc.y, 
+                        printSize=vehicleSize, printColor=vehicleColour)
+    
+    # Simulation flags:
     flag_wind = 0 
     
     # Needs to be corrected.
-    WP = waypoint(width, height)    
-    WP.generateTarget('first')
     
-    stateEnum    = ["Position Hold", "Waypoint capture", "Circle Around", "8 Navigation"]
-    subStateEnum = ["NA","Circling around C1", "Transitioning to C2", "Circling around C2", "Transitioning to C1"]
     
+    # Simulation display info
+    stateEnum    = ["None", "Waypoint capture", "Circle Around", "8 Navigation"]
+    subStateEnum = [[""],[""], [""], ["Entering through C1", "Circling around C1", "Transitioning to C2", "Circling around C2", "Transitioning to C1"]]
     rotationType = ["Anticlockwise", "Clockwise"]
-    
-    windType = ["None", "Random values", "Perlin Noise"]
+    windType     = ["None", "Random values", "Perlin Noise"]
 
     
 def draw():
     background(255)
     Env.updateEnv(WP, vehicle, flag_wind)
-    vehicle.plotVehicle()
     
     # Simulation status:
     fill(255,0,0)
     textSize(12)
     text("Current state      : " + str(vehicle.state) + " (" + str(stateEnum[vehicle.state])  + ")", 30, 30)
-    text("Current substate : " + str(vehicle.subState)+ " (" + str(subStateEnum[vehicle.subState])  + ")", 30, 42)
+    text("Current substate : " + str(vehicle.subState)+ " (" + str(subStateEnum[vehicle.state][vehicle.subState])  + ")", 30, 42)
     
     text("Rotation : " +  rotationType[constrain(vehicle.rotClockwise,0,1)], 30, 66)
     text("Distance to target: " + str(vehicle.tgtDist), 30, 78)
@@ -65,5 +77,6 @@ def keyPressed():
     if key == 'm':
         if vehicle.state == 3:
             vehicle.state = 1
+            vehicle.subState = 0
         else:
             vehicle.state +=1 

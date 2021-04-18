@@ -1,3 +1,5 @@
+import pdb
+
 class vehicle():
     
     # Default walker properties
@@ -49,15 +51,13 @@ class vehicle():
             desSpd, distTarget_mag = self.captureWP()
                 
         elif self.state == 2: # Circle around with or without Future Position
-            desSpd, distTarget_mag, thrash = self.circleAround(flag_futurePos=0)
+            desSpd, distTarget_mag, thrash = self.circleAround(flag_futurePos=1)
             
         elif self.state == 3: # Figure 8 Navigation. (2D implementation)
 
             # Will start at C1 - to be changed later.        
             Target = WPlist.currWP
             C1     = WPlist.nextWP
-            if self.subState == 0:
-                self.subState = 1
             
             desSpd, distTarget_mag = self.eightNav(Target, C1, flag_rotClockwise=self.rotClockwise)            
             
@@ -106,9 +106,19 @@ class vehicle():
             
             Cout_deg = -PI/2
                     
+        # Enters C1 through C1_in:
+        if self.subState == 0: # Circle around C1
+            self.currWP = C1_in
+            self.nextWP = C1
+            desSpd, distTarget_mag  = self.captureWP()
+            if distTarget_mag <= self.WPtol:
+                self.currWP = C1
+                self.subState += 1
+                
         # Go to C1 and circle around it until C1_out is reached
-        if self.subState == 1: # Circle around C1
+        elif self.subState == 1: # Circle around C1
             self.currWP = C1
+            self.nextWP = C2_in
             desSpd, distTarget_mag, tgtAngPos  = self.circleAround(flag_futurePos=1, flag_direction=flag_rotClockwise,flag_plot=0)
             self.tgtAngPos = tgtAngPos
             if self.checkAngCapture(Cout_deg, tgtAngPos):
@@ -117,6 +127,7 @@ class vehicle():
         
         elif self.subState == 2: # Move from C1_out to C2_in
             self.currWP = C2_in
+            self.nextWP = C2
             desSpd, distTarget_mag  = self.captureWP()
             if distTarget_mag <= self.WPtol:
                 self.currWP = C2
@@ -124,6 +135,7 @@ class vehicle():
                 
         elif self.subState == 3: # Circle around C2
             self.currWP = C2
+            self.nextWP = C1_in
             desSpd, distTarget_mag, tgtAngPos  = self.circleAround(flag_futurePos=1, flag_direction=-flag_rotClockwise, flag_plot=0)
             self.tgtAngPos = tgtAngPos
             if self.checkAngCapture(Cout_deg, tgtAngPos):
@@ -132,6 +144,7 @@ class vehicle():
         
         elif self.subState == 4: # Move from C2_out to C1_in
             self.currWP = C1_in
+            self.nextWP = C1
             desSpd, distTarget_mag  = self.captureWP()
             if distTarget_mag <= self.WPtol:
                 self.currWP = C1
@@ -184,8 +197,7 @@ class vehicle():
         
         centerToBorder = distToCenter.copy().normalize().mult(-self.stayAtRadius)
         distToBorder   = PVector.add(distToCenter,centerToBorder)
-        
-        
+
         theta = atan2(centerToBorder.y,centerToBorder.x)     
 
         if distToBorder.mag() > self.stayAtThreshold:

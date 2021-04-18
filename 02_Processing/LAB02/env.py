@@ -41,6 +41,7 @@ class FlowField():
     
     # Returns the field value at a given position:
     def getField(self, Pose=PVector(0,0)):
+        print(Pose.x, Pose.y)
         col = int(constrain(Pose.x/self.resolution, 0, self.cols-1))
         row = int(constrain(Pose.y/self.resolution, 0, self.rows-1))
 
@@ -48,7 +49,7 @@ class FlowField():
 
 class env():
     def __init__(self, resolution=10):
-        self.envResolution = 10 # Resolution set to 10 pixels.
+        self.envResolution = resolution 
         self.windFlow = FlowField(self.envResolution)
     
     def activateWind(self, flag_wind):
@@ -69,4 +70,6 @@ class env():
         outPos = InnLoop_outPos + outerPos
             
         vehicle.updatePose(outAcc, outSpd, outPos)
+        
+        vehicle.plotVehicle()
         
