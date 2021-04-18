@@ -1,5 +1,3 @@
-import pdb
-
 class FlowField():
     def __init__(self, Resolution):
         

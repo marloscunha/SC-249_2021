@@ -9,7 +9,7 @@ def setup():
     resolution = 10 # Amount of pixels to be used as simulation resolution.
     background(255)
     
-    global vehicle, WP, Env, flag_wind, stateEnum, subStateEnum, windType
+    global vehicle, WP, Env, flag_wind, stateEnum, subStateEnum, windType, rotationType
     
     Env = env(resolution)
     vehicle = vehicle(x0=200 , y0=200, vx_0=0, vy_0=0.0, ax_0 = 0, ay_0 = 0, printSize=6, printColor=[000, 255, 00])
@@ -21,6 +21,8 @@ def setup():
     
     stateEnum    = ["Position Hold", "Waypoint capture", "Circle Around", "8 Navigation"]
     subStateEnum = ["NA","Circling around C1", "Transitioning to C2", "Circling around C2", "Transitioning to C1"]
+    
+    rotationType = ["Anticlockwise", "Clockwise"]
     
     windType = ["None", "Random values", "Perlin Noise"]
 
@@ -35,9 +37,10 @@ def draw():
     textSize(12)
     text("Current state      : " + str(vehicle.state) + " (" + str(stateEnum[vehicle.state])  + ")", 30, 30)
     text("Current substate : " + str(vehicle.subState)+ " (" + str(subStateEnum[vehicle.subState])  + ")", 30, 42)
-    text("Target position  : " + str(vehicle.tgtAngPos), 30, 54)
-    text("Distance to target: " + str(vehicle.tgtDist), 30, 66)
-    text("Wind: " + str(windType[Env.windFlow.status]), 30, 78)
+    
+    text("Rotation : " +  rotationType[constrain(vehicle.rotClockwise,0,1)], 30, 66)
+    text("Distance to target: " + str(vehicle.tgtDist), 30, 78)
+    text("Wind: " + str(windType[Env.windFlow.status]), 30, 90)
     
     fill(255)
             
@@ -51,9 +54,16 @@ def mouseClicked():
     
 def keyPressed():
     global flag_wind
+    
     if key == 'w':
         if flag_wind == 2:
             flag_wind = 0
         else:
             flag_wind +=1
         Env.activateWind(flag_wind)
+        
+    if key == 'm':
+        if vehicle.state == 3:
+            vehicle.state = 1
+        else:
+            vehicle.state +=1 

@@ -47,21 +47,19 @@ class vehicle():
         
         if self.state == 1: # Waypoint capture with Stay at
             desSpd, distTarget_mag = self.captureWP()
-            self.tgtDist = distTarget_mag
                 
         elif self.state == 2: # Circle around with or without Future Position
-            desSpd, distTarget_mag = self.circleAround(flag_futurePos=0)
-            self.tgtDist = distTarget_mag
+            desSpd, distTarget_mag, thrash = self.circleAround(flag_futurePos=0)
             
         elif self.state == 3: # Figure 8 Navigation. (2D implementation)
-            
+
+            # Will start at C1 - to be changed later.        
             Target = WPlist.currWP
             C1     = WPlist.nextWP
             if self.subState == 0:
                 self.subState = 1
             
             desSpd, distTarget_mag = self.eightNav(Target, C1, flag_rotClockwise=self.rotClockwise)            
-            self.tgtDist = distTarget_mag
             
         steering = PVector.sub(desSpd, self.Spd).limit(self.MaxForce)
             
@@ -100,7 +98,7 @@ class vehicle():
             
             Cout_deg = PI/2
             
-        elif flag_rotClockwise == -1: # Counter clockwise rotation
+        elif flag_rotClockwise == -1: # Anticlockwise rotation
             C1_in  = pahtPoints[0]
             C1_out = pahtPoints[1]
             C2_in  = pahtPoints[2]
@@ -162,6 +160,7 @@ class vehicle():
     def captureWP(self):
         distTarget     = PVector.sub(self.currWP, self.Pos)     
         distTarget_mag = distTarget.mag()
+        self.tgtDist = distTarget_mag
         
         # Desired Speed:
         if distTarget_mag < 100:             
@@ -186,18 +185,21 @@ class vehicle():
         centerToBorder = distToCenter.copy().normalize().mult(-self.stayAtRadius)
         distToBorder   = PVector.add(distToCenter,centerToBorder)
         
-        distTarget_mag = 9999999 # This will ensure that the WP-capture is bypassed
+        
         theta = atan2(centerToBorder.y,centerToBorder.x)     
 
         if distToBorder.mag() > self.stayAtThreshold:
             m = map(distToBorder.mag(), self.stayAtThreshold, self.stayAtThreshold+2 , 0.1, self.MaxSpd)
             desSpd = PVector.mult(distToBorder.normalize(), m)
+            distToTarget = distToBorder.mag()
             
         else:
             self.angProj = atan2(centerToBorder.y,centerToBorder.x) # Vehicle's angular projection onto the circle                   
             theta += flag_direction*self.angSpd          
             target = PVector(self.stayAtRadius * cos(theta), self.stayAtRadius * sin(theta)).add(self.currWP)
-            
+            vectToTarget = PVector.sub(target, self.Pos)
+            distToTarget = vectToTarget.mag()
+            desSpd = vectToTarget.copy().limit(self.MaxSpd)
             if flag_plot == 1:        
                 ellipse(self.currWP.x,self.currWP.y,2*self.stayAtRadius,2*self.stayAtRadius)
                 fill(0, 0, 255)
@@ -206,17 +208,17 @@ class vehicle():
                 fill(0, 255, 0)
                 ellipse(self.currWP.x+centerToBorder.x,self.currWP.y+centerToBorder.y, 6, 6)
                 fill(255)
-            
-            desSpd = PVector.sub(target, self.Pos).limit(self.MaxSpd)
-
-        return desSpd, distTarget_mag, theta
+        
+        changeWP = 9999999 # This will ensure that the WP-capture is bypassed
+        self.tgtDist = distToTarget
+        return desSpd, changeWP, theta
                                    
     def plotVehicle(self):       
         
-        walkerHeading = self.Spd.heading() + PI/2
+        Heading = self.Spd.heading() + PI/2
         pushMatrix()
         translate(self.Pos.x, self.Pos.y)
-        rotate(walkerHeading)
+        rotate(Heading)
         fill(self.Color[0], self.Color[1], self.Color[2])
         triangle(   0    , -self.wh,
                  -self.wh,  self.wh,
