@@ -1,4 +1,4 @@
-from walker import walker
+from vehicle import vehicle
 from waypoint import waypoint
 from env import env
 from math import pi
@@ -8,9 +8,8 @@ def setup():
     size(1200, 800)
     background(255)
     
-    global walker01, walker02, t0, tn, sim_time, sim_step, WP, Env, flag_wind, stateEnum, subStateEnum
-    walker01 = walker(width, height, x0=100 , y0=100, vx_0=1, vy_0=3.3, ax_0 = 0, ay_0 = 0, printSize=6, printColor=[255, 192, 203])
-    walker02 = walker(width, height, x0=200 , y0=200, vx_0=0, vy_0=0.0, ax_0 = 0, ay_0 = 0, printSize=6, printColor=[000, 255, 00])
+    global vehicle, WP, Env, flag_wind, stateEnum, subStateEnum
+    vehicle = vehicle(x0=200 , y0=200, vx_0=0, vy_0=0.0, ax_0 = 0, ay_0 = 0, printSize=6, printColor=[000, 255, 00])
     WP = waypoint(width, height)
     Env = env()
     flag_wind = 0    
@@ -22,8 +21,8 @@ def setup():
     
 def draw():
     background(255)
-    Env.updateEnv(WP, walker02, flag_wind)
-    walker02.plotWalker()
+    Env.updateEnv(WP, vehicle, flag_wind)
+    vehicle.plotVehicle()
     
     
     
@@ -31,8 +30,11 @@ def draw():
     
     fill(255,0,0)
     textSize(12)
-    text("Current state      : " + str(walker02.state) + " (" + str(stateEnum[walker02.state])  + ")", 30, 30)
-    text("Current substate : " + str(walker02.subState)+ " (" + str(subStateEnum[walker02.subState])  + ")", 30, 42)
+    text("Current state      : " + str(vehicle.state) + " (" + str(stateEnum[vehicle.state])  + ")", 30, 30)
+    text("Current substate : " + str(vehicle.subState)+ " (" + str(subStateEnum[vehicle.subState])  + ")", 30, 42)
+    text("Target position  : " + str(vehicle.tgtAngPos), 30, 54)
+    text("Distance to target: " + str(vehicle.tgtDist), 30, 66)
+    
     fill(255)
             
 def mouseClicked():

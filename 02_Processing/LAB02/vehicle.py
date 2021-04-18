@@ -1,15 +1,13 @@
-import pdb
-
-class walker():
+class vehicle():
     
     # Default walker properties
-    def __init__(self, wSize, hSize, x0, y0, vx_0, vy_0, ax_0, ay_0, printSize, printColor):
+    def __init__(self, x0, y0, vx_0, vy_0, ax_0, ay_0, printSize, printColor):
         self.Pos = PVector(x0, y0)
         self.Spd = PVector(vx_0, vy_0)
         self.Acc = PVector(ax_0, ay_0)
         
         self.angProj = 0
-        self.rotClockwise = -1
+        self.rotClockwise = 1
         self.refDeptAngle = 'target' # 'target' or 'self'
         
         self.angSpd = 1
@@ -24,7 +22,9 @@ class walker():
         self.stayAtRadius = 100
         self.stayAtThreshold = 30
         self.hop_ahead = 5
+        
         self.tgtAngPos = 0
+        self.tgtDist = 0
         
         self.prevWP = PVector(0,0,0)
         self.nextWP = PVector(0,0,0)
@@ -32,18 +32,14 @@ class walker():
                       
         self.wh = printSize
         self.Color = printColor
-        
-        self.window_wSize = wSize
-        self.window_hSize = hSize
     
     def updatePose(self, outAcc, outSpd, outPos): 
         self.Acc = outAcc
         self.Spd = outSpd
         self.Pos = outPos
         
-        self.Pos.x = (self.Pos.x+self.window_wSize) % self.window_wSize
-        self.Pos.y = (self.Pos.y+self.window_hSize) % self.window_hSize
-        
+        self.Pos.x = (self.Pos.x+width)  % width
+        self.Pos.y = (self.Pos.y+height) % height
         
     def generateCommands(self, WPlist):
         # Precisa ser modificada. WPlist precisa ser uma lista.
@@ -51,9 +47,11 @@ class walker():
         
         if self.state == 1: # Waypoint capture with Stay at
             desSpd, distTarget_mag = self.captureWP()
+            self.tgtDist = distTarget_mag
                 
         elif self.state == 2: # Circle around with or without Future Position
-            desSpd, distTarget_mag, trash = self.circleAround(flag_futurePos=0)
+            desSpd, distTarget_mag = self.circleAround(flag_futurePos=0)
+            self.tgtDist = distTarget_mag
             
         elif self.state == 3: # Figure 8 Navigation. (2D implementation)
             
@@ -63,7 +61,7 @@ class walker():
                 self.subState = 1
             
             desSpd, distTarget_mag = self.eightNav(Target, C1, flag_rotClockwise=self.rotClockwise)            
-            
+            self.tgtDist = distTarget_mag
             
         steering = PVector.sub(desSpd, self.Spd).limit(self.MaxForce)
             
@@ -100,7 +98,7 @@ class walker():
             C2_out = pahtPoints[2]
             C2_in  = pahtPoints[3]
             
-            Cout_deg = PI/2 + PI/5
+            Cout_deg = PI/2
             
         elif flag_rotClockwise == -1: # Counter clockwise rotation
             C1_in  = pahtPoints[0]
@@ -114,7 +112,7 @@ class walker():
         if self.subState == 1: # Circle around C1
             self.currWP = C1
             desSpd, distTarget_mag, tgtAngPos  = self.circleAround(flag_futurePos=1, flag_direction=flag_rotClockwise,flag_plot=0)
-            
+            self.tgtAngPos = tgtAngPos
             if self.checkAngCapture(Cout_deg, tgtAngPos):
                 self.currWP = C2_in
                 self.subState += 1
@@ -128,7 +126,8 @@ class walker():
                 
         elif self.subState == 3: # Circle around C2
             self.currWP = C2
-            desSpd, distTarget_mag, tgtAngPos  = self.circleAround(flag_futurePos=1, flag_direction=-flag_rotClockwise, flag_plot=0)                
+            desSpd, distTarget_mag, tgtAngPos  = self.circleAround(flag_futurePos=1, flag_direction=-flag_rotClockwise, flag_plot=0)
+            self.tgtAngPos = tgtAngPos
             if self.checkAngCapture(Cout_deg, tgtAngPos):
                 self.currWP = C1_in
                 self.subState += 1
@@ -174,10 +173,8 @@ class walker():
         return desSpd, distTarget_mag
     
     def circleAround(self, flag_futurePos=1, flag_direction=1, flag_plot=1):
-        # flag_futurePos =  1 : use future position
-        #                =  0 : don't use future position
-        # flag_direction =  1 :      clockwise rotation
-        #                = -1 : anti clockwise rotation 
+        # flag_futurePos =  1 : use future position;  0 : don't use future position
+        # flag_direction =  1 : clockwise rotation ; -1 : anti clockwise rotation 
         
         if flag_futurePos == 1:
             fut_Pos = self.Spd.copy().normalize().mult(self.hop_ahead)
@@ -213,11 +210,8 @@ class walker():
             desSpd = PVector.sub(target, self.Pos).limit(self.MaxSpd)
 
         return desSpd, distTarget_mag, theta
-    
-    def plotWP(self):
-        print('oi')
-                                    
-    def plotWalker(self):       
+                                   
+    def plotVehicle(self):       
         
         walkerHeading = self.Spd.heading() + PI/2
         pushMatrix()
