@@ -55,7 +55,7 @@ class waypoint():
                 print(str(self.prevWP) + ': ' + self.prevWP_status + ' || ' + str(self.currWP) + ': '+ self.currWP_status)
 
         elif distTarget_mag == -1 and newTarget != None: #Skipping and following a new WP.            
-            
+            print('aqui')
             self.prevWP, self.prevWP_status = self.currWP.copy(), 'skipped'
             self.currWP, self.currWP_status = newTarget, 'chasing'
             

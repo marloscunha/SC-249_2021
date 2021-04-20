@@ -41,7 +41,6 @@ class FlowField():
     
     # Returns the field value at a given position:
     def getField(self, Pose=PVector(0,0)):
-        print(Pose.x, Pose.y)
         col = int(constrain(Pose.x/self.resolution, 0, self.cols-1))
         row = int(constrain(Pose.y/self.resolution, 0, self.rows-1))
 
