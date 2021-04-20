@@ -21,9 +21,9 @@ class vehicle():
         
         self.WPtol = 2
         
-        self.stayAtRadius = 100
-        self.stayAtThreshold = 30
-        self.hop_ahead = 25
+        self.stayAtRadius = 80
+        self.stayAtThreshold = 40
+        self.hop_ahead = 1
         
         self.tgtAngPos = 0
         self.tgtDist = 0
@@ -152,17 +152,18 @@ class vehicle():
         # flag_direction =  1 : clockwise rotation ; -1 : anti clockwise rotation 
         
         if flag_futurePos == 1:
-            fut_Pos = self.Spd.copy().normalize().mult(self.hop_ahead)
-            fut_Pos.add(self.Pos)
-            
-            print(fut_Pos, self.Pos, PVector.sub(fut_Pos,self.Pos))
-            distToCenter   = PVector.sub(self.currWP, fut_Pos)
+            ref_Pos = self.Spd.copy().normalize().mult(self.hop_ahead)
+            ref_Pos.add(self.Pos)
         else:
-            distToCenter   = PVector.sub(self.currWP, self.Pos)
+            ref_Pos = self.Pos.copy()
+        line(self.Pos.x, self.Pos.y, ref_Pos.x, ref_Pos.y)
+        distToCenter   = PVector.sub(self.currWP, ref_Pos)
         
         centerToBorder = distToCenter.copy().normalize().mult(-self.stayAtRadius)
         distToBorder   = PVector.add(distToCenter,centerToBorder)
+        
         theta = atan2(centerToBorder.y,centerToBorder.x)
+        theta += flag_direction*self.angSpd
         target = PVector(self.stayAtRadius * cos(theta), self.stayAtRadius * sin(theta)).add(self.currWP)
 
         # Vehicle's angular projection onto the circle 
@@ -170,13 +171,10 @@ class vehicle():
         self.angProj = atan2(vehicleProjection.y, vehicleProjection.x) 
         
         if distToBorder.mag() > self.stayAtThreshold:
-            m = map(distToBorder.mag(), self.stayAtThreshold, self.stayAtThreshold+2 , 0.1, self.MaxSpd)
-            desSpd = PVector.mult(distToBorder.normalize(), m)
+            desSpd = distToBorder.limit(self.MaxSpd)
             distToTarget = distToBorder.mag()            
-        else:
-                   
-            theta += flag_direction*self.angSpd          
-            vectToTarget = PVector.sub(target, self.Pos)
+        else:         
+            vectToTarget = PVector.sub(target, ref_Pos)
             distToTarget = vectToTarget.mag()
             desSpd = vectToTarget.copy().limit(self.MaxSpd)
         

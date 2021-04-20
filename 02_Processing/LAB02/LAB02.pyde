@@ -7,7 +7,7 @@ def setup():
     global vehicle, WP, Env, flag_wind, stateEnum, subStateEnum, windType, rotationType
     
     # Simulation definitions:
-    size(1200, 800) # Window display size
+    size(800, 800) # Window display size
     resolution = 10 # Amount of pixels to be used as simulation resolution.
     background(255) # Background colour    
         
