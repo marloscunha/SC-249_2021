@@ -35,7 +35,7 @@ def setup():
     
     # Simulation display info
     stateEnum    = ["None", "Waypoint capture", "Circle Around", "8 Navigation"]
-    subStateEnum = [[""],[""], [""], ["Entering through C1", "Circling around C1", "Transitioning to C2", "Circling around C2", "Transitioning to C1"]]
+    subStateEnum = [[""],[""], [""], ["Entering through C1", "Circling around C1", "From C1 to C2", "Circling around C2", "From C2 to C1"]]
     rotationType = ["Anticlockwise", "Clockwise"]
     windType     = ["None", "Random values", "Perlin Noise"]
 
