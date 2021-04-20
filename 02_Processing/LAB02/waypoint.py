@@ -1,14 +1,3 @@
-'''
-This class shall handle with creation of Waypoints that will be followed by the walker. 
-
-Still have to include:
-- Linear walker with constant speed
-
-
-Deveria mandar uma lista e nao assim...
-
-'''
-
 class waypoint():
     def __init__(self):
         
@@ -23,27 +12,14 @@ class waypoint():
         
         self.captureTol = 2
         
-        self.WPtype = 1 
-        
-        self.radius = 1
-        
     def generateTarget(self, WPstatus):
-        # Gerar automaticamente os WPs (next, current e ja trocar automaticamente)    
-        if self.WPtype == 1: # Generates a new random target.
-            self.prevWP = self.currWP.copy()
-            self.prevWP_status = WPstatus
-            self.currWP = PVector(random(1) * width, random(1) * height)
-            self.currWP_status = 'chasing'
-            self.nextWP = PVector.add(self.currWP,PVector(200,0,0))
-            self.nextWP_status = 'chasing'
-        
-        elif self.WPtype == 2: # Generates an Eight-Navigation-Scheme
-            print('aqui')
+        self.prevWP = self.currWP.copy()
+        self.prevWP_status = WPstatus
+        self.currWP = PVector(constrain(random(1) * width,300,width-300), constrain(random(1)*height,210,height-210))
+        self.currWP_status = 'chasing'
+        self.nextWP = PVector.add(self.currWP,PVector(200,0,0))
+        self.nextWP_status = 'chasing'
             
-    def setWPtype(self, WPtypeID):
-        self.WPtype = WPtypeID
-        print('Waypoint Type: ' + str(self.WPtype))
-           
     def updateTarget(self, distTarget_mag, newTarget=None):
         # 0  : captured
         # -1 : skip
@@ -54,13 +30,13 @@ class waypoint():
                 self.generateTarget('captured')
                 print(str(self.prevWP) + ': ' + self.prevWP_status + ' || ' + str(self.currWP) + ': '+ self.currWP_status)
 
-        elif distTarget_mag == -1 and newTarget != None: #Skipping and following a new WP.            
-            print('aqui')
-            self.prevWP, self.prevWP_status = self.currWP.copy(), 'skipped'
-            self.currWP, self.currWP_status = newTarget, 'chasing'
-            
-            self.nextWP, self.nextWP_status = PVector.add(newTarget, PVector(2*100,0,0)), 'chasing'
-            
-            print(str(self.prevWP) + ': ' + self.prevWP_status + ' || ' + str(self.currWP) + ': '+ self.currWP_status)
-            print(self.nextWP)
+        elif distTarget_mag == -1: 
+            if newTarget != None: #Skipping and following a new WP.   
+                self.prevWP, self.prevWP_status = self.currWP.copy(), 'skipped'
+                self.currWP, self.currWP_status = newTarget, 'chasing'
                 
+                self.nextWP, self.nextWP_status = PVector.add(newTarget, PVector(2*100,0,0)), 'chasing'
+                
+                print(str(self.prevWP) + ': ' + self.prevWP_status + ' || ' + str(self.currWP) + ': '+ self.currWP_status)
+            else:
+                self.generateTarget('skipped')

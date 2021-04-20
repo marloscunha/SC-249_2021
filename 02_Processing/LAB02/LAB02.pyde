@@ -30,8 +30,7 @@ def setup():
     # Simulation flags:
     flag_wind = 0 
     
-    # Needs to be corrected.
-    
+    # Needs to be corrected.  
     
     # Simulation display info
     stateEnum    = ["None", "Waypoint capture", "Circle Around", "8 Navigation"]
@@ -54,15 +53,17 @@ def draw():
     text("Distance to target: " + str(vehicle.tgtDist), 30, 78)
     text("Wind: " + str(windType[Env.windFlow.status]), 30, 90)
     
+    text("Speed: " + str(round(vehicle.Spd.mag())), 30, 102)
+    
     fill(255)
             
 def mouseClicked():
     if mouseButton == LEFT:
-        WP.setWPtype(1) # Random
+        # Sets target at the clicked location
         WP.updateTarget(-1, PVector(mouseX,mouseY))
     elif mouseButton == RIGHT:
-        WP.setWPtype(2) # Eight Figure
-        WP.updateTarget(-1, PVector(mouseX,mouseY))
+        # Random target
+        WP.updateTarget(-1)
     
 def keyPressed():
     global flag_wind

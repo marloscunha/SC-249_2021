@@ -2,7 +2,6 @@ import pdb
 
 class vehicle():
     
-    # Default walker properties
     def __init__(self, x0, y0, vx_0, vy_0, ax_0, ay_0, printSize, printColor):
         self.Pos = PVector(x0, y0)
         self.Spd = PVector(vx_0, vy_0)
@@ -19,22 +18,23 @@ class vehicle():
         self.state = 3
         self.subState = 0
         
-        self.WPtol = 2
+        self.Nav8_WParcTol = 2
+        self.Nav8_WPlinTol = 50
+        self.Nav_WPtol = 2
         
         self.stayAtRadius = 80
         self.stayAtThreshold = 40
-        self.hop_ahead = 1
+        self.hop_ahead = 10
         
         self.tgtAngPos = 0
         self.tgtDist = 0
         
-        self.prevWP = PVector(0,0,0)
         self.nextWP = PVector(0,0,0)
         self.currWP = PVector(0,0,0)
                       
         self.wh = printSize
         self.Color = printColor
-    
+       
     def updatePose(self, outAcc, outSpd, outPos): 
         self.Acc = outAcc
         self.Spd = outSpd
@@ -50,11 +50,10 @@ class vehicle():
             desSpd, distTarget_mag = self.captureWP(pathToFollow[0])
                 
         elif self.state == 2: # Circle around with or without Future Position
-            #pathToFollow                   = self.genPath(WPlist)
-            desSpd, distTarget_mag, thrash = self.circleAround(flag_futurePos=1)
+            pathToFollow                   = self.genPath(WPlist)
+            desSpd, distTarget_mag, thrash = self.circleAround(pathToFollow[0], flag_futurePos=1)
             
         elif self.state == 3: # Figure 8 Navigation. (2D implementation)
-
             pathToFollow           = self.genPath(WPlist, flag_rotClockwise=self.rotClockwise)
             desSpd, distTarget_mag = self.eightNav(pathToFollow, flag_rotClockwise=self.rotClockwise)            
             
@@ -70,50 +69,52 @@ class vehicle():
         
         # Unpacking of the trajectory points
         C1_in, C1_out, C2_in, C2_out, C1, Target, C2, Cout_deg = pathToFollow
-                                            
-        # Enters C1 through C1_in:
+        
+         # Enters C1 through C1_in:
         if self.subState == 0: # Circle around C1
             self.currWP = C1_in
             self.nextWP = C1
             desSpd, distTarget_mag  = self.captureWP(self.currWP)
-            if distTarget_mag <= self.WPtol:
+            if distTarget_mag <= self.Nav_WPtol:
                 self.currWP = C1
                 self.subState += 1
                 
         # Go to C1 and circle around it until C1_out is reached
         elif self.subState == 1: # Circle around C1
             self.currWP = C1
-            self.nextWP = C2_in
-            desSpd, distTarget_mag, tgtAngPos  = self.circleAround(flag_futurePos=1, flag_direction=flag_rotClockwise,flag_plot=0)
+            self.nextWP = C1_out
+            desSpd, distTarget_mag, tgtAngPos  = self.circleAround(self.currWP, flag_futurePos=1, flag_direction=flag_rotClockwise,flag_plot=0)
             self.tgtAngPos = tgtAngPos
             if self.checkAngCapture(Cout_deg, tgtAngPos):
                 self.currWP = C2_in
                 self.subState += 1
         
-        elif self.subState == 2: # Move from C1_out to C2_in
+        # Move C1_out to C2_in                
+        elif self.subState == 2: 
             self.currWP = C2_in
             self.nextWP = C2
             desSpd, distTarget_mag  = self.captureWP(self.currWP)
-            if distTarget_mag <= self.WPtol:
+            if distTarget_mag <= self.Nav_WPtol:
                 self.currWP = C2
                 self.subState += 1
                 
         elif self.subState == 3: # Circle around C2
             self.currWP = C2
-            self.nextWP = C1_in
-            desSpd, distTarget_mag, tgtAngPos  = self.circleAround(flag_futurePos=1, flag_direction=-flag_rotClockwise, flag_plot=0)
+            self.nextWP = C2_out
+            desSpd, distTarget_mag, tgtAngPos  = self.circleAround(self.currWP, flag_futurePos=1, flag_direction=-flag_rotClockwise, flag_plot=0)
             self.tgtAngPos = tgtAngPos
             if self.checkAngCapture(Cout_deg, tgtAngPos):
                 self.currWP = C1_in
                 self.subState += 1
         
-        elif self.subState == 4: # Move from C2_out to C1_in
+        elif self.subState == 4: # Move from Target to C2_in
             self.currWP = C1_in
             self.nextWP = C1
             desSpd, distTarget_mag  = self.captureWP(self.currWP)
-            if distTarget_mag <= self.WPtol:
+            if distTarget_mag <= self.Nav_WPtol:
                 self.currWP = C1
                 self.subState = 1
+        
         else:
             desSpd = PVector(0,0,0)
         
@@ -131,43 +132,46 @@ class vehicle():
     
     def alongPathDist(self, path):
         # Returns the distance from the vehicle to the target along the trajectory path.
+        # Not implemented yet
         a = 1
     
     def captureWP(self, Target):
         distTarget     = PVector.sub(Target, self.Pos)
         distTarget_mag = distTarget.mag()
-        self.tgtDist = distTarget_mag
+        self.tgtDist   = distTarget_mag
         
         # Desired Speed:
         if distTarget_mag < 100:             
-            m = map(distTarget_mag, 0, 100, 2, self.MaxSpd)
+            m = map(distTarget_mag, 10, 100, 2, self.MaxSpd)
             desSpd = PVector.mult(distTarget.normalize(), m)
         else:
             desSpd = PVector.mult(distTarget.normalize(), self.MaxSpd) # Desired Speed
                         
         return desSpd, distTarget_mag
     
-    def circleAround(self, flag_futurePos=1, flag_direction=1, flag_plot=1):
+    def circleAround(self, pathToFollow, flag_futurePos=1, flag_direction=1, flag_plot=1):
         # flag_futurePos =  1 : use future position;  0 : don't use future position
         # flag_direction =  1 : clockwise rotation ; -1 : anti clockwise rotation 
         
+        Center = pathToFollow
+    
         if flag_futurePos == 1:
             ref_Pos = self.Spd.copy().normalize().mult(self.hop_ahead)
             ref_Pos.add(self.Pos)
         else:
             ref_Pos = self.Pos.copy()
-        line(self.Pos.x, self.Pos.y, ref_Pos.x, ref_Pos.y)
-        distToCenter   = PVector.sub(self.currWP, ref_Pos)
+        
+        distToCenter   = PVector.sub(Center, ref_Pos)
         
         centerToBorder = distToCenter.copy().normalize().mult(-self.stayAtRadius)
         distToBorder   = PVector.add(distToCenter,centerToBorder)
         
         theta = atan2(centerToBorder.y,centerToBorder.x)
         theta += flag_direction*self.angSpd
-        target = PVector(self.stayAtRadius * cos(theta), self.stayAtRadius * sin(theta)).add(self.currWP)
+        target = PVector(self.stayAtRadius * cos(theta), self.stayAtRadius * sin(theta)).add(Center)
 
         # Vehicle's angular projection onto the circle 
-        vehicleProjection = PVector.sub(self.currWP, self.Pos).normalize().mult(-self.stayAtRadius)
+        vehicleProjection = PVector.sub(Center, self.Pos).normalize().mult(-self.stayAtRadius)
         self.angProj = atan2(vehicleProjection.y, vehicleProjection.x) 
         
         if distToBorder.mag() > self.stayAtThreshold:
@@ -179,19 +183,25 @@ class vehicle():
             desSpd = vectToTarget.copy().limit(self.MaxSpd)
         
         if flag_plot == 1:        
-                ellipse(self.currWP.x,self.currWP.y,2*self.stayAtRadius,2*self.stayAtRadius)
-                fill(0, 0, 255)
-                line(self.Pos.x, self.Pos.y, target.x, target.y)
-                ellipse(target.x, target.y, 6, 6)
-                fill(0, 255, 0)
-                ellipse(self.currWP.x+vehicleProjection.x,self.currWP.y+vehicleProjection.y, 6, 6)
-                fill(255)
-        
+                    ellipse(Center.x,Center.y,2*self.stayAtRadius,2*self.stayAtRadius)
+                    fill(0, 0, 255)
+                    line(self.Pos.x, self.Pos.y, target.x, target.y)
+                    ellipse(target.x, target.y, 6, 6)
+                    fill(0, 255, 0)
+                    ellipse(Center.x+vehicleProjection.x,Center.y+vehicleProjection.y, 6, 6)
+                    fill(255)
+                    line(self.Pos.x, self.Pos.y, ref_Pos.x, ref_Pos.y)
+                    ellipse(Center.x, Center.y, 6, 6)
+                
         changeWP = 9999999 # This will ensure that the WP-capture is bypassed
         self.tgtDist = distToTarget
         return desSpd, changeWP, theta
                                    
     def genPath(self, WPlist, flag_rotClockwise=1, plot_path=1, flag_futurePos=1):
+        # 1 = Waypoint capture with Stay-At
+        # 2 = Circle around with/witout Future Position
+        # 3 = 8-Navigation
+        
         if self.state == 1: # Waypoint capture with Stay at
             Target = WPlist.currWP
             if plot_path:
@@ -201,32 +211,16 @@ class vehicle():
             return [Target]
                 
         elif self.state == 2: # Circle around with or without Future Position
-            if flag_futurePos == 1:
-                fut_Pos = self.Spd.copy().normalize().mult(hop_ahead)
-                fut_Pos.add(self.Pos)
-                distToCenter   = PVector.sub(self.currWP, fut_Pos)
-            else:
-                distToCenter   = PVector.sub(self.currWP, self.Pos)
-        
-            centerToBorder = distToCenter.copy().normalize().mult(-self.stayAtRadius)
-            distToBorder   = PVector.add(distToCenter,centerToBorder) 
+            Center = WPlist.currWP           
+            # For the time being, plotting and other things will be handled 
+            # within circleAround function.
             
-            
-            
-            
-            if plot_path == 1:        
-                ellipse(self.currWP.x,self.currWP.y,2*self.stayAtRadius,2*self.stayAtRadius)
-                fill(0, 0, 255)
-                line(self.Pos.x, self.Pos.y, target.x, target.y)
-                ellipse(target.x, target.y, 6, 6)
-                fill(0, 255, 0)
-                ellipse(self.currWP.x+centerToBorder.x,self.currWP.y+centerToBorder.y, 6, 6)
-                fill(255)
+            return [Center]
             
         elif self.state == 3: # Figure 8 Navigation. (2D implementation)
             Target = WPlist.currWP
             C1     = WPlist.nextWP
-            
+   
             # Generates the position vector and its unitary vector.
             C1_to_Target = PVector.sub(C1, Target)
             C1_to_Target_unit = C1_to_Target.copy().normalize()
@@ -267,8 +261,9 @@ class vehicle():
                 line(C1_out.x, C1_out.y, C2_in.x, C2_in.y)
                 line(C2_out.x, C2_out.y, C1_in.x, C1_in.y)
                 line(self.Pos.x, self.Pos.y, self.currWP.x, self.currWP.y)
+                ellipse(Target.x, Target.y, 6, 6)
             
-        return [C1_in, C1_out, C2_in, C2_out, C1, Target, C2, Cout_deg] 
+            return [C1_in, C1_out, C2_in, C2_out, C1, Target, C2, Cout_deg] 
     
     def plotVehicle(self):       
         
