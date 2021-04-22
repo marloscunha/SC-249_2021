@@ -18,7 +18,7 @@ def setup():
     vehicleColour = [0, 255, 0]
     vehicleSize   = 6
     
-    # Object instantiation:
+    # Objects instantiation:
     Env       = env(resolution)                                             # Creates the simulationational environment
     WP = waypoint()    
     WP.generateTarget('first')

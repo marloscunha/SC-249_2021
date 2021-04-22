@@ -1,5 +1,7 @@
-import pdb
+'''
 
+
+'''
 class vehicle():
     
     def __init__(self, x0, y0, vx_0, vy_0, ax_0, ay_0, printSize, printColor):
@@ -47,7 +49,7 @@ class vehicle():
         
         if self.state == 1: # Waypoint capture with Stay at
             pathToFollow           = self.genPath(WPlist)
-            desSpd, distTarget_mag = self.captureWP(pathToFollow[0])
+            desSpd, distTarget_mag = self.linWPcapture(pathToFollow[0])
                 
         elif self.state == 2: # Circle around with or without Future Position
             pathToFollow                   = self.genPath(WPlist)
@@ -74,7 +76,7 @@ class vehicle():
         if self.subState == 0: # Circle around C1
             self.currWP = C1_in
             self.nextWP = C1
-            desSpd, distTarget_mag  = self.captureWP(self.currWP)
+            desSpd, distTarget_mag  = self.linWPcapture(self.currWP)
             if distTarget_mag <= self.Nav_WPtol:
                 self.currWP = C1
                 self.subState += 1
@@ -93,7 +95,7 @@ class vehicle():
         elif self.subState == 2: 
             self.currWP = C2_in
             self.nextWP = C2
-            desSpd, distTarget_mag  = self.captureWP(self.currWP)
+            desSpd, distTarget_mag  = self.linWPcapture(self.currWP)
             if distTarget_mag <= self.Nav_WPtol:
                 self.currWP = C2
                 self.subState += 1
@@ -110,7 +112,7 @@ class vehicle():
         elif self.subState == 4: # Move from Target to C2_in
             self.currWP = C1_in
             self.nextWP = C1
-            desSpd, distTarget_mag  = self.captureWP(self.currWP)
+            desSpd, distTarget_mag  = self.linWPcapture(self.currWP)
             if distTarget_mag <= self.Nav_WPtol:
                 self.currWP = C1
                 self.subState = 1
@@ -135,7 +137,7 @@ class vehicle():
         # Not implemented yet
         a = 1
     
-    def captureWP(self, Target):
+    def linWPcapture(self, Target):
         distTarget     = PVector.sub(Target, self.Pos)
         distTarget_mag = distTarget.mag()
         self.tgtDist   = distTarget_mag
