@@ -41,6 +41,7 @@ def setup():
     
 def draw():
     background(255)
+    frameRate(60)
     Env.updateEnv(WP, vehicle, flag_wind)
     
     # Simulation status:

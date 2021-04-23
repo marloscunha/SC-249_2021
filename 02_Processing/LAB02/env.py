@@ -57,7 +57,7 @@ class env():
     def updateEnv(self, WP, vehicle, flag_wind=0):
         # Vehicle's inner forces and commands:   
         InnLoop_outAcc, InnLoop_outSpd, InnLoop_outPos, distTarget_mag = vehicle.generateCommands(WP)
-        WP.updateTarget(distTarget_mag) 
+        #WP.updateTarget(distTarget_mag) 
                 
         # Outer forces and commands:
         outerAcc, outerSpd, outerPos = PVector(0,0), PVector(0,0), self.windFlow.getField(vehicle.Pos)
