@@ -138,12 +138,7 @@ class vehicle():
             ref_departureAngle = self.angProj
             
         return ref_departureAngle >= (Cout_deg - PI/18) and ref_departureAngle <= (Cout_deg + PI/18)
-    
-    def alongPathDist(self, path):
-        # Returns the distance from the vehicle to the target along the trajectory path.
-        # Not implemented yet
-        a = 1
-    
+       
     def singleWPCapture(self, Target, captureSpeed=0):
         # Performs a single waypoint capture, using a speed reducting approach while arriving at the
         # target destination. If no other waypoint is given after the capture, vehicle shall stay at

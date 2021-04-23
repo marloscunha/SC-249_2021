@@ -30,8 +30,6 @@ def setup():
     # Simulation flags:
     flag_wind = 0 
     
-    # Needs to be corrected.  
-    
     # Simulation display info
     stateEnum    = ["None", "Waypoint capture", "Circle Around", "8 Navigation"]
     subStateEnum = [[""],[""], [""], ["Entering through C1", "Circling around C1", "From C1 to C2", "Circling around C2", "From C2 to C1"]]
